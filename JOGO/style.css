@@ -1,0 +1,335 @@
+/* ===== ESTILOS BASE (MOBILE FIRST) ===== */
+body {
+  font-family: Georgia, 'Times New Roman', Times, serif;
+  color: antiquewhite;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  margin: 0;
+  padding: 1rem;
+  background-color: rgb(26, 26, 26);
+}
+
+h1 {
+  color: antiquewhite;
+  font-size: 1.8rem;
+  margin-bottom: 1rem;
+  text-align: center;
+}
+
+.game-container {
+  width: 100%;
+  max-width: 300px;
+  background-color: rgb(44, 44, 44);
+  padding: 1.5rem;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.game-status {
+  margin: 1rem 0;
+  font-size: 1.2rem;
+  font-weight: bold;
+  min-height: 1.5rem;
+  text-align: center;
+  color: antiquewhite;
+  padding: 0.5rem;
+  background-color: rgb(48, 48, 48);
+  border-radius: 5px;
+}
+
+
+/* ===== ESTILOS DO TABULEIRO ===== */
+.board {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(3, 1fr);
+  gap: 8px;
+  background-color: rgb(26, 26, 26);
+  border-radius: 8px;
+  padding: 8px;
+  position: relative;
+  overflow: hidden;
+  width: 300px; /* Largura fixa */
+  height: 300px; /* Altura fixa */
+  margin: 0 auto; /* Centraliza o tabuleiro */
+}
+
+.cell {
+  background-color: rgb(48, 48, 48);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 3rem;
+  cursor: pointer;
+  border-radius: 5px;
+  transition: background-color 0.3s ease;
+  position: relative;
+  user-select: none;
+  width: 100%; /* Ocupa toda a largura da célula do grid */
+  height: 100%; /* Ocupa toda a altura da célula do grid */
+  min-height: 0; /* Impede expansão */
+  min-width: 0; /* Impede expansão */
+}
+
+.cell.x {
+  color: #3498db; /* Azul para X */
+}
+
+.cell.o {
+  color: #e74c3c; /* Vermelho para O */
+  text-shadow: 0 0 5px rgba(231, 76, 60, 0.5);
+}
+
+.cell:hover {
+  background-color: rgb(60, 60, 60);
+}
+
+.cell:focus {
+  outline: 3px solid #3498db;
+  outline-offset: -3px;
+}
+
+.cell.winner {
+  background-color: rgba(46, 204, 113, 0.2);
+}
+
+.cell.cpu-move {
+    background-color: rgba(231, 76, 60, 0.2);
+    transition: background-color 0.5s;
+}
+
+.controls {
+  margin-top: 1.5rem;
+  display: flex;
+  justify-content:space-between;
+}
+
+button {
+  padding: 0.5rem 1rem;
+  font-size: 1rem;
+  cursor: pointer;
+  background-color: #3498db;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  transition: all 0.3s ease;
+  font-weight: bold;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+button:hover {
+  background-color: #2980b9;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+button:active {
+  transform: translateY(0);
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ===== ANIMAÇÃO DA LINHA VENCEDORA ===== */
+.winning-line {
+  position: absolute;
+  background-color: #2ecc71;
+  z-index: 10;
+  animation: drawLine 0.5s ease-out forwards;
+  box-shadow: 0 0 5px rgba(46, 204, 113, 0.7);
+}
+
+@keyframes drawLine {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+/* Posições da linha vencedora - agora calculadas corretamente */
+.winning-line.row-0 {
+  height: 6px;
+  width: calc(100% - 16px);
+  left: 8px;
+  top: calc(16.66% + 4px);
+  transform-origin: left center;
+}
+
+.winning-line.row-1 {
+  height: 6px;
+  width: calc(100% - 16px);
+  left: 8px;
+  top: 50%;
+  transform-origin: left center;
+}
+
+.winning-line.row-2 {
+  height: 6px;
+  width: calc(100% - 16px);
+  left: 8px;
+  top: calc(83.33% - 4px);
+  transform-origin: left center;
+}
+
+.winning-line.col-0 {
+  width: 6px;
+  height: calc(100% - 16px);
+  left: calc(16.66% + 4px);
+  top: 8px;
+  transform-origin: center top;
+}
+
+.winning-line.col-1 {
+  width: 6px;
+  height: calc(100% - 16px);
+  left: 50%;
+  top: 8px;
+  transform-origin: center top;
+}
+
+.winning-line.col-2 {
+  width: 6px;
+  height: calc(100% - 16px);
+  left: calc(83.33% - 4px);
+  top: 8px;
+  transform-origin: center top;
+}
+
+.winning-line.diagonal-1 {
+  width: 150%;
+  height: 8px;
+  top: 0;
+  left: 0;
+  transform: rotate(-45deg) scaleX(0);
+  transform-origin: left center;
+  animation: drawDiagonal 0.5s ease-out forwards;
+}
+
+.winning-line.diagonal-2 {
+  width: 150%;
+  height: 8px;
+  top: 100%;
+  left: 0;
+  transform: rotate(45deg) scaleX(0);
+  transform-origin: left center;
+  animation: drawDiagonal 0.5s ease-out forwards;
+}
+
+/* Animação de empate - V completo */
+.draw-v {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  left: 0;
+  top: 0;
+  z-index: 10;
+  pointer-events: none;
+}
+
+.draw-v-line {
+  position: absolute;
+  width: 140%;
+  height: 8px;
+  background-color: #f39c12;
+  top: 50%;
+  left: -20%;
+  animation: drawV 0.5s ease-out forwards;
+  transform-origin: center;
+}
+
+.draw-v-line.first {
+  transform: rotate(45deg);
+}
+
+.draw-v-line.second {
+  transform: rotate(-45deg);
+}
+
+@keyframes drawV {
+  from {
+    transform: rotate(var(--angle)) scaleX(0);
+  }
+  to {
+    transform: rotate(var(--angle)) scaleX(1);
+  }
+}
+
+@keyframes drawDiagonal {
+  from {
+    transform: rotate(var(--angle)) scaleX(0);
+  }
+  to {
+    transform: rotate(var(--angle)) scaleX(1);
+  }
+}
+
+/* ===== MEDIA QUERIES PARA TELAS MAIORES ===== */
+@media (min-width: 768px) {
+  .game-container {
+    max-width: 400px;
+    padding: 2rem;
+  }
+  
+  h1 {
+    font-size: 2.2rem;
+    margin-bottom: 1.5rem;
+  }
+  
+  .game-status {
+    font-size: 1.3rem;
+    padding: 0.7rem;
+  }
+
+  .board {
+    width: 400px;
+    height: 400px;
+  }
+  
+  .cell {
+    font-size: 4rem;
+  }
+  
+  button {
+    padding: 0.8rem 1.8rem;
+    font-size: 1.1rem;
+  }
+  
+  .winning-line {
+    height: 8px;
+  }
+  
+  .winning-line.col-0,
+  .winning-line.col-1,
+  .winning-line.col-2 {
+    width: 8px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .game-container {
+    max-width: 500px;
+  }
+  
+  .board {
+    width: 500px;
+    height: 500px;
+  }
+
+  .cell {
+    font-size: 5rem;
+  }
+}
