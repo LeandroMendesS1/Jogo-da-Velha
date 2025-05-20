@@ -142,6 +142,33 @@ button:active {
   border: 0;
 }
 
+/*===== ESTILOS DO PLACAR =====*/
+.scoreboard {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+  background-color: rgb(48, 48, 48);
+  padding: 0.5rem;
+  border-radius: 5px;
+  font-size: 1rem;
+}
+
+.scoreboard div {
+  padding: 0 0.5rem;
+}
+
+.score-x {
+  color: #3498db;
+}
+
+.score-o {
+  color: #e74c3c;
+}
+
+.score-draw {
+  color: #f39c12;
+}
+
 /* ===== ANIMAÇÃO DA LINHA VENCEDORA ===== */
 .winning-line {
   position: absolute;

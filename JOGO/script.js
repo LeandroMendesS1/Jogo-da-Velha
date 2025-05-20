@@ -4,6 +4,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const resetButton = document.getElementById('reset-btn');
     const board = document.querySelector('.board');
 
+    let scores = {
+        X: 0,
+        O: 0,
+        draw: 0
+    }
+
     let gameMode = "human";
     
     let gameActive = true;
@@ -52,6 +58,12 @@ document.addEventListener('DOMContentLoaded', () => {
             const randomMove = availableMoves[Math.floor(Math.random() * availableMoves.length)];
             makeMove(randomMove);
         }
+    }
+
+    function updateScoreboard() {
+    document.getElementById('score-x').textContent = scores.X;
+    document.getElementById('score-o').textContent = scores.O;
+    document.getElementById('score-draw').textContent = scores.draw;
     }
 
     function findWinningMove(player) {
@@ -203,6 +215,10 @@ function showDraw() {
             statusDisplay.setAttribute('aria-live', 'assertive');
             gameActive = false;
             drawWinningLine(winningCombination);
+
+            // Incrementa a pontuação do jogador vencedor
+            scores[currentPlayer]++;
+            updateScoreboard();
             return;
         }
         
@@ -212,6 +228,10 @@ function showDraw() {
             statusDisplay.setAttribute('aria-live', 'assertive');
             gameActive = false;
             showDraw();
+
+            // Incrementa os empates
+            scores.draw++;
+            updateScoreboard()
             return;
         }
         
