@@ -19,12 +19,6 @@
             <div class="game-status" aria-live="polite" id="status">
                 Vez do jogador X
             </div>
-
-            <div class="scoreboard">
-                <div class="score-x">X: <span id="score-x">0</span></div>
-                <div class="score-o">O: <span id="score-o">0</span></div>
-                <div class="score-draw">Empates: <span id="score-draw">0</span></div>
-            </div>
             
             <div class="board" role="grid" aria-labelledby="game-heading">
                 <div class="cell" role="gridcell" tabindex="0" aria-label="Célula 1, vazia" data-index="0"></div>
@@ -39,11 +33,33 @@
             </div>
             
             <div class="controls">
-                <button id="mode-btn" aria-label="Alternar modo de jogo">2 Jogadores</button>
-                
                 <button id="reset-btn" aria-label="Reiniciar jogo">Reiniciar Jogo</button>
             </div>
         </section>
+
+        <div class="ranking-container">
+    <div class="current-player">
+        <h3 id="player-name-display">JOG</h3>
+        <div class="points">Pontos: <span id="player-points">0</span></div>
+    </div>
+    
+    <div class="leaderboard">
+        <h4>Top 5 Jogadores</h4>
+        <table id="leaderboard-table">
+            <thead>
+                <tr>
+                    <th>Posição</th>
+                    <th>Nome</th>
+                    <th>Pontos</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Preenchido via JavaScript -->
+            </tbody>
+        </table>
+    </div>
+</div>
+
     </main>
 
     <footer>

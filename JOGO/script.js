@@ -1,279 +1,247 @@
+// Variáveis globais
+let playerName = "JOG";
+let playerPoints = 0;
+let leaderboard = JSON.parse(localStorage.getItem('jogoDaVelhaLeaderboard')) || [];
+
 document.addEventListener('DOMContentLoaded', () => {
+    // Obter nome do jogador e exibir
+    playerName = getPlayerName();
+    document.getElementById('player-name-display').textContent = playerName;
+
+    // Inicializa o ranking
+    renderLeaderboard();
+
+    // Elementos da interface
     const cells = document.querySelectorAll('.cell');
     const statusDisplay = document.getElementById('status');
     const resetButton = document.getElementById('reset-btn');
     const board = document.querySelector('.board');
 
-    let scores = {
-        X: 0,
-        O: 0,
-        draw: 0
-    }
-
-    let gameMode = "human";
-    
+    // Estado do jogo
     let gameActive = true;
     let currentPlayer = "X";
-    let gameState = ["", "", "", "", "", "", "", "", ""];
-    
+    let gameState = Array(9).fill("");
+
     const winningConditions = [
-        [0, 1, 2], [3, 4, 5], [6, 7, 8], // linhas
-        [0, 3, 6], [1, 4, 7], [2, 5, 8], // colunas
-        [0, 4, 8], [2, 4, 6]             // diagonais
+        [0, 1, 2], [3, 4, 5], [6, 7, 8],
+        [0, 3, 6], [1, 4, 7], [2, 5, 8],
+        [0, 4, 8], [2, 4, 6]
     ];
-    
+
     // Mensagens do jogo
-    const winningMessage = () => `Jogador ${currentPlayer} venceu!`;
-    const drawMessage = () => `Empate!`;
-    const currentPlayerTurn = () => `Vez do jogador ${currentPlayer}`;
-    
-    // Inicializa o jogo
-    statusDisplay.textContent = currentPlayerTurn();
+    const messages = {
+        currentTurn: () => `Vez do jogador ${currentPlayer}`,
+        win: () => `Jogador ${currentPlayer} venceu!`,
+        draw: () => `Empate!`
+    };
 
-        function makeCpuMove() {
-        // Estratégia simples: primeiro tenta vencer, depois bloqueia, depois joga aleatório
+    statusDisplay.textContent = messages.currentTurn();
 
+    // Inicializa evento das células
+    cells.forEach(cell => {
+        cell.addEventListener('click', handleCellClick);
+        cell.addEventListener('keydown', e => {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                handleCellClick(e);
+            }
+        });
+    });
+
+    resetButton.addEventListener('click', resetGame);
+
+    // Funções de Jogo
+    function handleCellClick(e) {
+        const cell = e.target;
+        const index = parseInt(cell.getAttribute('data-index'));
+        if (gameState[index] !== "" || !gameActive) return;
+
+        playMove(cell, index);
+    }
+
+    function playMove(cell, index) {
+        gameState[index] = currentPlayer;
+        cell.textContent = currentPlayer;
+        cell.classList.add(currentPlayer.toLowerCase());
+        cell.setAttribute('aria-label', `Célula ${index + 1}, ${currentPlayer}`);
+        checkResult();
+    }
+
+    function makeCpuMove() {
+        console.log("CPU tentando jogar...");
         if (!gameActive || currentPlayer !== "O") return;
-        
-        // 1. Verifica se pode vencer
-        let move = findWinningMove("O");
+
+        // 1. Verifica se precisa bloquear o jogador humano
+        let move = findWinningMove("X");
         if (move !== null) {
-            makeMove(move);
+            makeMoveWithAnimation(move);
             return;
         }
-        
-        // 2. Verifica se precisa bloquear o jogador humano
-        move = findWinningMove("X");
+
+        // 2. Verifica se pode vencer
+        move = findWinningMove("O");
         if (move !== null) {
-            makeMove(move);
+            makeMoveWithAnimation(move);
             return;
         }
-        
-        // 3. Se não, faz uma jogada aleatória
+
+        // 3. Caso contrário, faz uma jogada aleatória
         const availableMoves = gameState
             .map((cell, index) => cell === "" ? index : null)
             .filter(val => val !== null);
-        
+
         if (availableMoves.length > 0) {
             const randomMove = availableMoves[Math.floor(Math.random() * availableMoves.length)];
-            makeMove(randomMove);
+            makeMoveWithAnimation(randomMove);
         }
     }
 
-    function updateScoreboard() {
-    document.getElementById('score-x').textContent = scores.X;
-    document.getElementById('score-o').textContent = scores.O;
-    document.getElementById('score-draw').textContent = scores.draw;
+    function makeMoveWithAnimation(index) {
+        const cell = document.querySelector(`.cell[data-index="${index}"]`);
+        if (!cell || gameState[index] !== "") return;
+
+        cell.classList.add('cpu-move');
+        setTimeout(() => {
+            playMove(cell, index);
+            cell.classList.remove('cpu-move');
+        }, 400);
     }
 
     function findWinningMove(player) {
-        for (let i = 0; i < winningConditions.length; i++) {
-            const [a, b, c] = winningConditions[i];
-            // Verifica se há duas marcas do jogador e um espaço vazio
+        for (let combo of winningConditions) {
+            const [a, b, c] = combo;
             const cells = [gameState[a], gameState[b], gameState[c]];
             const emptyIndex = cells.indexOf("");
-            
             if (cells.filter(val => val === player).length === 2 && emptyIndex !== -1) {
-                return winningConditions[i][emptyIndex];
+                return combo[emptyIndex];
             }
         }
         return null;
     }
 
-    function makeMove(index) {
-        const cell = document.querySelector(`.cell[data-index="${index}"]`);
-        cell.classList.add('cpu-move'); // Adicione esta classe
-        setTimeout(() => {
-            cell.click();
-            cell.classList.remove('cpu-move');
-        }, 400);
-    }
-    
-    // Função para manipular o clique na célula
-    function handleCellClick(clickedCellEvent) {
-        const clickedCell = clickedCellEvent.target;
-        const clickedCellIndex = parseInt(clickedCell.getAttribute('data-index'));
-        
-        // Se a célula já foi usada ou o jogo não está ativo, ignorar
-        if (gameState[clickedCellIndex] !== "" || !gameActive) return;
-        
-        // Atualizar estado do jogo e interface
-        handleCellPlayed(clickedCell, clickedCellIndex);
-        //handleResultValidation();
-    }
-    
-    // Função para manipular o evento de teclado na célula
-    function handleCellKeyDown(e) {
-        // Permitir interação com Enter ou Space
-        if (e.key === 'Enter' || e.key === ' ') {
-            e.preventDefault();
-            handleCellClick(e);
-        }
-    }
-    
-    // Atualiza o estado interno do jogo e a interface
-    function handleCellPlayed(clickedCell, clickedCellIndex) {
-        gameState[clickedCellIndex] = currentPlayer;
-        clickedCell.textContent = currentPlayer;
-        clickedCell.classList.add(currentPlayer.toLowerCase()); // Adiciona classe x ou o
-        clickedCell.setAttribute('aria-label', `Célula ${clickedCellIndex + 1}, ${currentPlayer}`);
-
-        // Verifica se o jogo continua após esta jogada
-        handleResultValidation();
-        
-        // Se for modo CPU e o jogo ainda está ativo, faz a jogada da CPU
-        if (gameActive && gameMode === "cpu" && currentPlayer === "O") {
-        setTimeout(makeCpuMove, 800);
-        }
-    }
-    
-    // Função para desenhar a linha vencedora
-    function drawWinningLine(winningCombination) {
-    const line = document.createElement('div');
-    line.className = 'winning-line';
-    
-    // Remove qualquer linha existente
-    document.querySelectorAll('.winning-line').forEach(el => el.remove());
-    
-    // Determina o tipo de linha baseado na combinação vencedora
-    if (winningCombination.includes(0) && winningCombination.includes(1) && winningCombination.includes(2)) {
-        line.classList.add('row-0');
-    } else if (winningCombination.includes(3) && winningCombination.includes(4) && winningCombination.includes(5)) {
-        line.classList.add('row-1');
-    } else if (winningCombination.includes(6) && winningCombination.includes(7) && winningCombination.includes(8)) {
-        line.classList.add('row-2');
-    } else if (winningCombination.includes(0) && winningCombination.includes(3) && winningCombination.includes(6)) {
-        line.classList.add('col-0');
-    } else if (winningCombination.includes(1) && winningCombination.includes(4) && winningCombination.includes(7)) {
-        line.classList.add('col-1');
-    } else if (winningCombination.includes(2) && winningCombination.includes(5) && winningCombination.includes(8)) {
-        line.classList.add('col-2');
-    } else if (winningCombination.includes(0) && winningCombination.includes(4) && winningCombination.includes(8)) {
-        line.classList.add('diagonal-1');
-        line.style.setProperty('--angle', '45deg');
-    } else if (winningCombination.includes(2) && winningCombination.includes(4) && winningCombination.includes(6)) {
-        line.classList.add('diagonal-2');
-        line.style.setProperty('--angle', '-45deg');
-    }
-    
-    board.appendChild(line);
-    
-    // Destacar células vencedoras
-    winningCombination.forEach(index => {
-        cells[index].classList.add('winner');
-    });
-}
-    
-    // Função para mostrar empate
-function showDraw() {
-    const drawElement = document.createElement('div');
-    drawElement.className = 'draw-v';
-    
-    // Cria as duas linhas do V
-    const line1 = document.createElement('div');
-    line1.className = 'draw-v-line first';
-    line1.style.setProperty('--angle', '45deg');
-    
-    const line2 = document.createElement('div');
-    line2.className = 'draw-v-line second';
-    line2.style.setProperty('--angle', '-45deg');
-    
-    // Remove qualquer V existente
-    document.querySelectorAll('.draw-v').forEach(el => el.remove());
-    
-    drawElement.appendChild(line1);
-    drawElement.appendChild(line2);
-    board.appendChild(drawElement);
-    }
-    
-    // Função para limpar a linha vencedora e empate
-    function clearBoardEffects() {
-        document.querySelectorAll('.winning-line, .draw-v').forEach(el => el.remove());
-        document.querySelectorAll('.cell').forEach(cell => {
-            cell.classList.remove('winner');
-        });
-    }
-    
-    // Verifica se houve vitória ou empate
-    function handleResultValidation() {
-        let roundWon = false;
-        let winningCombination = null;
-        
-        for (let i = 0; i < winningConditions.length; i++) {
-            const [a, b, c] = winningConditions[i];
-            if (gameState[a] === "" || gameState[b] === "" || gameState[c] === "") continue;
-            
-            if (gameState[a] === gameState[b] && gameState[b] === gameState[c]) {
-                roundWon = true;
-                winningCombination = winningConditions[i];
+    function checkResult() {
+        let winCombo = null;
+        for (let combo of winningConditions) {
+            const [a, b, c] = combo;
+            if (gameState[a] && gameState[a] === gameState[b] && gameState[a] === gameState[c]) {
+                winCombo = combo;
                 break;
             }
         }
-        
-        if (roundWon) {
-            statusDisplay.textContent = winningMessage();
-            statusDisplay.setAttribute('aria-live', 'assertive');
-            gameActive = false;
-            drawWinningLine(winningCombination);
 
-            // Incrementa a pontuação do jogador vencedor
-            scores[currentPlayer]++;
-            updateScoreboard();
+        if (winCombo) {
+            gameActive = false;
+            statusDisplay.textContent = messages.win();
+            statusDisplay.setAttribute('aria-live', 'assertive');
+            drawWinningLine(winCombo);
+            if (currentPlayer === "X") updatePoints('win');
             return;
         }
-        
-        let roundDraw = !gameState.includes("");
-        if (roundDraw) {
-            statusDisplay.textContent = drawMessage();
-            statusDisplay.setAttribute('aria-live', 'assertive');
+
+        if (!gameState.includes("")) {
             gameActive = false;
+            statusDisplay.textContent = messages.draw();
+            statusDisplay.setAttribute('aria-live', 'assertive');
             showDraw();
-
-            // Incrementa os empates
-            scores.draw++;
-            updateScoreboard()
+            updatePoints('draw');
             return;
         }
-        
-        // Mudar jogador
-        currentPlayer = currentPlayer === "X" ? "O" : "X";
-        statusDisplay.textContent = currentPlayerTurn();
-    }
-    
-    // Reinicia o jogo
-    function handleResetGame() {
-        gameActive = true;
-        currentPlayer = "X";
-        gameState = ["", "", "", "", "", "", "", "", ""];
-        statusDisplay.textContent = currentPlayerTurn();
-        statusDisplay.setAttribute('aria-live', 'polite');
-        clearBoardEffects();
-        
-        cells.forEach(cell => {
-            cell.textContent = "";
-            cell.classList.remove('x', 'o', 'winner');
-            cell.setAttribute('aria-label', `Célula ${parseInt(cell.getAttribute('data-index')) + 1}, vazia`);
-        });
 
-        // Se for modo CPU e o jogador atual é O (CPU), faz a primeira jogada
-        if (gameMode === "cpu" && currentPlayer === "O") {
+        currentPlayer = currentPlayer === "X" ? "O" : "X";
+        statusDisplay.textContent = messages.currentTurn();
+
+        if (gameActive && currentPlayer === "O") {
             setTimeout(makeCpuMove, 800);
         }
     }
-    
-    // Adiciona event listeners
-    cells.forEach(cell => {
-        cell.addEventListener('click', handleCellClick);
-        cell.addEventListener('keydown', handleCellKeyDown);
-    });
 
-    const modeButton = document.getElementById('mode-btn');
+    function resetGame() {
+        gameActive = true;
+        currentPlayer = "X";
+        gameState.fill("");
+        statusDisplay.textContent = messages.currentTurn();
+        statusDisplay.setAttribute('aria-live', 'polite');
+        document.querySelectorAll('.winning-line, .draw-v').forEach(el => el.remove());
 
-    modeButton.addEventListener('click', () => {
-        gameMode = gameMode === "human" ? "cpu" : "human";
-        modeButton.textContent = gameMode === "human" ? "2 Jogadores" : "1 Jogador";
-        handleResetGame();
-    });
-    
-    resetButton.addEventListener('click', handleResetGame);
+        cells.forEach((cell, i) => {
+            cell.textContent = "";
+            cell.className = "cell";
+            cell.setAttribute('aria-label', `Célula ${i + 1}, vazia`);
+        });
+    }
+
+    function drawWinningLine(combo) {
+        const line = document.createElement('div');
+        line.className = 'winning-line';
+
+        const classMap = {
+            "012": 'row-0', "345": 'row-1', "678": 'row-2',
+            "036": 'col-0', "147": 'col-1', "258": 'col-2',
+            "048": 'diagonal-1', "246": 'diagonal-2'
+        };
+
+        const key = combo.join('');
+        line.classList.add(classMap[key] || '');
+
+        board.appendChild(line);
+        combo.forEach(i => cells[i].classList.add('winner'));
+    }
+
+    function showDraw() {
+        const draw = document.createElement('div');
+        draw.className = 'draw-v';
+
+        const line1 = document.createElement('div');
+        line1.className = 'draw-v-line first';
+        line1.style.setProperty('--angle', '45deg');
+
+        const line2 = document.createElement('div');
+        line2.className = 'draw-v-line second';
+        line2.style.setProperty('--angle', '-45deg');
+
+        draw.appendChild(line1);
+        draw.appendChild(line2);
+        board.appendChild(draw);
+    }
+
+    // Pontuação e Ranking
+    function updatePoints(result) {
+        if (result === 'win') playerPoints += 3;
+        else if (result === 'draw') playerPoints += 1;
+
+        document.getElementById('player-points').textContent = playerPoints;
+        updateLeaderboard();
+    }
+
+    function updateLeaderboard() {
+        const existing = leaderboard.find(p => p.name === playerName);
+        if (existing) {
+            existing.points = Math.max(existing.points, playerPoints);
+        } else {
+            leaderboard.push({ name: playerName, points: playerPoints });
+        }
+
+        leaderboard.sort((a, b) => b.points - a.points);
+        leaderboard = leaderboard.slice(0, 5);
+
+        localStorage.setItem('jogoDaVelhaLeaderboard', JSON.stringify(leaderboard));
+        renderLeaderboard();
+    }
+
+    function renderLeaderboard() {
+        const tbody = document.querySelector('#leaderboard-table tbody');
+        tbody.innerHTML = '';
+        leaderboard.forEach((p, i) => {
+            tbody.innerHTML += `<tr><td>${i + 1}º</td><td>${p.name}</td><td>${p.points}</td></tr>`;
+        });
+    }
+
+    function getPlayerName() {
+        let name = "";
+        while (name.length !== 3) {
+            name = prompt("Digite seu nome (3 letras):", "JOG").toUpperCase().substr(0, 3);
+            if (name.length < 3) name = name.padEnd(3, "X");
+        }
+        return name;
+    }
 });

@@ -1,4 +1,4 @@
-/* ===== ESTILOS BASE (MOBILE FIRST) ===== */
+/* ===== BASE (MOBILE FIRST) ===== */
 body {
   font-family: Georgia, 'Times New Roman', Times, serif;
   color: antiquewhite;
@@ -41,7 +41,7 @@ h1 {
 }
 
 
-/* ===== ESTILOS DO TABULEIRO ===== */
+/* ===== TABULEIRO ===== */
 .board {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -104,7 +104,7 @@ h1 {
 .controls {
   margin-top: 1.5rem;
   display: flex;
-  justify-content:space-between;
+  justify-content: center;
 }
 
 button {
@@ -142,33 +142,6 @@ button:active {
   border: 0;
 }
 
-/*===== ESTILOS DO PLACAR =====*/
-.scoreboard {
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 1rem;
-  background-color: rgb(48, 48, 48);
-  padding: 0.5rem;
-  border-radius: 5px;
-  font-size: 1rem;
-}
-
-.scoreboard div {
-  padding: 0 0.5rem;
-}
-
-.score-x {
-  color: #3498db;
-}
-
-.score-o {
-  color: #e74c3c;
-}
-
-.score-draw {
-  color: #f39c12;
-}
-
 /* ===== ANIMAÇÃO DA LINHA VENCEDORA ===== */
 .winning-line {
   position: absolute;
@@ -178,7 +151,7 @@ button:active {
   box-shadow: 0 0 5px rgba(46, 204, 113, 0.7);
 }
 
-@keyframes drawLine {
+@keyframes drawLine-horizontal {
   from {
     transform: scaleX(0);
   }
@@ -187,7 +160,17 @@ button:active {
   }
 }
 
-/* Posições da linha vencedora - agora calculadas corretamente */
+@keyframes drawLine-vertical {
+  from {
+    transform: scaleY(0);
+  }
+  to {
+    transform: scaleY(1);
+  }
+}
+
+
+/* Posições da linha vencedora  */
 .winning-line.row-0 {
   height: 6px;
   width: calc(100% - 16px);
@@ -256,7 +239,8 @@ button:active {
   animation: drawDiagonal 0.5s ease-out forwards;
 }
 
-/* Animação de empate - V completo */
+
+/* Animação de empate */
 .draw-v {
   position: absolute;
   width: 100%;
@@ -302,6 +286,62 @@ button:active {
   to {
     transform: rotate(var(--angle)) scaleX(1);
   }
+}
+
+/* ===== RANKING ===== */
+.ranking-container {
+    margin-top: 1.5rem;
+    background-color: rgb(48, 48, 48);
+    padding: 1rem;
+    border-radius: 10px;
+}
+
+.current-player {
+    text-align: center;
+    margin-bottom: 1rem;
+}
+
+.current-player h3 {
+    color: #2ecc71;
+    margin: 0;
+    font-size: 2rem;
+    letter-spacing: 2px;
+}
+
+.points {
+    font-size: 1.1rem;
+    margin-top: 0.3rem;
+}
+
+.leaderboard {
+    margin-top: 1rem;
+}
+
+.leaderboard h4 {
+    text-align: center;
+    margin-bottom: 0.5rem;
+    color: #f39c12;
+}
+
+#leaderboard-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+#leaderboard-table th, 
+#leaderboard-table td {
+    padding: 0.5rem;
+    text-align: center;
+    border-bottom: 1px solid rgb(70, 70, 70);
+}
+
+#leaderboard-table th {
+    background-color: rgb(40, 40, 40);
+    color: #3498db;
+}
+
+#leaderboard-table tr:nth-child(even) {
+    background-color: rgb(44, 44, 44);
 }
 
 /* ===== MEDIA QUERIES PARA TELAS MAIORES ===== */
